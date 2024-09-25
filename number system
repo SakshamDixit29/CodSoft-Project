@@ -1,0 +1,109 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <vector>
+#include <algorithm>
+#include <limits>
+
+using namespace std;
+
+// Function to clear the input buffer
+void clearInput() {
+    cin.clear(); // Clear the error flag
+    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Ignore invalid input
+}
+
+// Function to calculate "Very Close", "Close", and "Far Away" clues
+string getClue(int guess, int secretNumber) {
+    int difference = abs(secretNumber - guess);
+
+    if (difference == 0) {
+        return "Correct!";
+    } else if (difference <= 5) {
+        return "Very Close";
+    } else if (difference <= 15) {
+        return "Close";
+    } else {
+        return "Far Away";
+    }
+}
+
+// Function to play the guessing game with set guesses
+int playGame(int rangeStart, int rangeEnd, int maxAttempts) {
+    srand(static_cast<unsigned int>(time(0)));
+    int secretNumber = rand() % (rangeEnd - rangeStart + 1) + rangeStart;
+    vector<int> guesses;
+    int attempts = 0;
+    bool guessedCorrectly = false;
+
+    cout << "\nI have chosen a number between " << rangeStart << " and " << rangeEnd << "." << endl;
+    cout << "You have " << maxAttempts << " attempts to guess the number." << endl;
+    cout << "In each attempt, you can guess 3 numbers at a time." << endl;
+
+    while (attempts < maxAttempts && !guessedCorrectly) {
+        guesses.clear();
+        int guess;
+        cout << "\nAttempt " << attempts + 1 << ": Enter your 3 guesses separated by spaces: ";
+
+        for (int i = 0; i < 3; ++i) {
+            while (!(cin >> guess)) {
+                cout << "Invalid input. Please enter a number: ";
+                clearInput();
+            }
+            guesses.push_back(guess);
+        }
+
+        attempts++;
+
+        // Check each guess and provide clues
+        for (int g : guesses) {
+            string clue = getClue(g, secretNumber);
+            cout << "Your guess " << g << " is " << clue << "." << endl;
+            if (clue == "Correct!") {
+                guessedCorrectly = true;
+                break;
+            }
+        }
+
+        if (!guessedCorrectly) {
+            cout << "None of the guesses were correct. Try again!" << endl;
+        }
+    }
+
+    if (!guessedCorrectly) {
+        cout << "Sorry! You've used all " << maxAttempts << " attempts. The correct number was " << secretNumber << "." << endl;
+    } else {
+        cout << "Congratulations! You guessed the correct number in " << attempts << " attempts." << endl;
+    }
+
+    // Calculate score based on remaining attempts
+    return guessedCorrectly ? (maxAttempts - attempts + 1) * 10 : 0;
+}
+
+// Main function to run the game
+int main() {
+    int rangeStart = 1;
+    int rangeEnd = 100;
+    int maxAttempts = 5;
+    char playAgain;
+    int totalScore = 0;
+
+    cout << "Welcome to the Advanced Number Guessing Game!" << endl;
+
+    do {
+        int score = playGame(rangeStart, rangeEnd, maxAttempts);
+        totalScore += score;
+        cout << "Your score for this round: " << score << endl;
+        cout << "Total Score: " << totalScore << endl;
+
+        cout << "Do you want to play again? (y/n): ";
+        cin >> playAgain;
+        while (playAgain != 'y' && playAgain != 'n') {
+            cout << "Invalid input. Enter 'y' to play again or 'n' to exit: ";
+            cin >> playAgain;
+        }
+    } while (playAgain == 'y');
+
+    cout << "Thanks for playing! Your final score is: " << totalScore << endl;
+    return 0;
+}
